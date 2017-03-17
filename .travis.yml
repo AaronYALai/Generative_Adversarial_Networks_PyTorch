@@ -22,7 +22,7 @@ env:
 
 
 install:
-  - pip install https://download.pytorch.org/whl/torch-0.1.10.post1-cp27-none-macosx_10_7_x86_64.whl 
+  - pip install https://download.pytorch.org/whl/cu75/torch-0.1.10.post2-cp27-none-linux_x86_64.whl 
   - pip install torchvision
   - pip wheel -r requirements.txt
   - pip install -r requirements.txt
