@@ -13,7 +13,3 @@ coverage==4.2
 # Pytest plugin for measuring coverage.
 # https://pypi.python.org/pypi/pytest-cov/2.2.0
 pytest-cov==2.2.0
-
-# Powerful extensions to the datetime module available in the Python standard library.
-# https://pypi.python.org/pypi/python-dateutil/2.5.3
-python-dateutil==2.5.3
