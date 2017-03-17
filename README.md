@@ -1,1 +1,3 @@
-# Generative-Adversarial-Networks in PyTorch
+# Generative Adversarial Networks in PyTorch
+
+
