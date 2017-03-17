@@ -9,7 +9,7 @@ class Discriminator(nn.Module):
 
     def __init__(self):
         super(Discriminator, self).__init__()
-        self.fc1 = nn.Linear(3 * 32 * 32, 256)
+        self.fc1 = nn.Linear(1 * 28 * 28, 256)
         self.drop1 = nn.Dropout(p=0.2)
         self.fc2 = nn.Linear(256, 128)
         self.drop2 = nn.Dropout(p=0.2)
@@ -26,10 +26,10 @@ class Generator(nn.Module):
 
     def __init__(self):
         super(Generator, self).__init__()
-        self.fc1 = nn.Linear(2, 256)
-        self.fc2 = nn.Linear(256, 512)
-        self.fc3 = nn.Linear(512, 1024)
-        self.fc4 = nn.Linear(1024, 32 * 32 * 3)
+        self.fc1 = nn.Linear(2, 128)
+        self.fc2 = nn.Linear(128, 256)
+        self.fc3 = nn.Linear(256, 512)
+        self.fc4 = nn.Linear(512, 1 * 28 * 28)
 
     def forward(self, x):
         x = F.elu(self.fc1(x))

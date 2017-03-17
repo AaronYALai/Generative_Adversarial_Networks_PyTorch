@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from GAN import Discriminator, Generator
 
 
-def load_CIFAR10(batch_size=10, download=True):
+def load_dataset(batch_size=10, download=True):
     """
     The output of torchvision datasets are PILImage images of range [0, 1].
     Transform them to Tensors of normalized range [-1, 1]
@@ -19,22 +19,19 @@ def load_CIFAR10(batch_size=10, download=True):
     transform = transforms.Compose([transforms.ToTensor(),
                                     transforms.Normalize((0.5, 0.5, 0.5),
                                                          (0.5, 0.5, 0.5))])
-    trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                            download=download,
-                                            transform=transform)
+    trainset = torchvision.datasets.MNIST(root='../data', train=True,
+                                          download=download,
+                                          transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                               shuffle=True, num_workers=2)
 
-    testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                           download=download,
-                                           transform=transform)
+    testset = torchvision.datasets.MNIST(root='../data', train=False,
+                                         download=download,
+                                         transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
                                              shuffle=False, num_workers=2)
 
-    classes = ('plane', 'car', 'bird', 'cat',
-               'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
-    return trainloader, testloader, classes
+    return trainloader, testloader
 
 
 def gen_noise(n_instance):
@@ -55,7 +52,7 @@ def train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
         for i, data in enumerate(trainloader, 0):
             # get the inputs from true distribution
             true_inputs, _ = data
-            true_inputs = true_inputs.view(-1, 3 * 32 * 32)
+            true_inputs = true_inputs.view(-1, 1 * 28 * 28)
             if use_gpu:
                 true_inputs = true_inputs.cuda()
             true_inputs = Variable(true_inputs)
@@ -104,10 +101,10 @@ def train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
     print('Finished Training')
 
 
-def main(n_epoch=2, batch_size=10, use_gpu=False, dis_lr=0.001, gen_lr=0.01,
-         n_update_dis=1, n_update_gen=1):
+def run_GAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4, gen_lr=1e-2,
+            n_update_dis=1, n_update_gen=1):
     # loading data
-    trainloader, testloader, classes = load_CIFAR10(batch_size=batch_size)
+    trainloader, testloader = load_dataset(batch_size=batch_size)
 
     # initialize models
     Dis_model = Discriminator()
@@ -130,4 +127,4 @@ def main(n_epoch=2, batch_size=10, use_gpu=False, dis_lr=0.001, gen_lr=0.01,
 
 
 if __name__ == '__main__':
-    main()
+    run_GAN()
