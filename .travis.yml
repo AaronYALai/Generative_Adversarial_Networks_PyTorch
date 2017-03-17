@@ -1,0 +1,35 @@
+language: python
+cache: pip
+dist: trusty
+sudo: required
+
+
+python:
+  - "2.7"
+
+
+before_install:
+  - pip install -U pip
+  - pip install wheel
+  - pip install coveralls
+  - sudo apt-get update
+
+
+env:
+  global:
+    - PIP_WHEEL_DIR=$HOME/.cache/pip/wheels
+    - PIP_FIND_LINKS=file://$HOME/.cache/pip/wheels
+
+
+install:
+  - pip wheel -r requirements.txt
+  - pip install -r requirements.txt
+
+
+script:
+  - py.test . --cov=./
+  - flake8 ./
+
+
+after_success:
+- coveralls
