@@ -1,0 +1,47 @@
+# the modular source code checker: pep8, pyflakes and co
+# https://pypi.python.org/pypi/flake8/2.5.4
+flake8==2.5.4
+
+# pytest: simple powerful testing with Python
+# https://pypi.python.org/pypi/pytest/2.8.3
+pytest==2.8.3
+
+# Code coverage measurement for Python
+# https://pypi.python.org/pypi/coverage
+coverage==4.2
+
+# Pytest plugin for measuring coverage.
+# https://pypi.python.org/pypi/pytest-cov/2.2.0
+pytest-cov==2.2.0
+
+# Powerful extensions to the datetime module available in the Python standard library.
+# https://pypi.python.org/pypi/python-dateutil/2.5.3
+python-dateutil==2.5.3
+
+# NumPy: array processing for numbers, strings, records, and objects.
+# https://pypi.python.org/pypi/numpy
+numpy==1.11.1
+
+# World timezone definitions, modern and historical
+# https://pypi.python.org/pypi/pytz
+pytz==2016.7
+
+# Powerful data structures for data analysis, time series,and statistics
+# https://pypi.python.org/pypi/pandas/0.18.1
+pandas==0.18.1
+
+# SciPy: a ecosystem of open-source software for mathematics, science, and engineering.
+# https://pypi.python.org/pypi/scipy/0.18.0rc2
+scipy==0.18.0
+
+# Powerful Python module for machine learning
+# https://pypi.python.org/pypi/scikit-learn/0.17.1
+scikit-learn==0.17.1
+
+# Protocol Buffers are Google’s data interchange format
+# https://pypi.python.org/pypi/protobuf/3.1.0.post1
+protobuf==3.1.0
+
+# TensorFlow helps the tensors flow
+# https://pypi.python.org/pypi/tensorflow/0.12.0rc1
+tensorflow==0.12.0rc1
