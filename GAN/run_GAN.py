@@ -101,7 +101,7 @@ def train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
     print('Finished Training')
 
 
-def run_GAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4, gen_lr=1e-2,
+def run_GAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4, gen_lr=1e-3,
             n_update_dis=1, n_update_gen=1):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
