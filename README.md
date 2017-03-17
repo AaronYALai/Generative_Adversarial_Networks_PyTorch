@@ -10,7 +10,7 @@ About
 
 Implementations about GAN, Improved GAN, DCGAN, LAPGAN, and InfoGAN in PyTorch
 
-GANs' recent development presented in the group meeting of MS Lab at National Taiwan University: [Slides](https://docs.google.com/presentation/d/1HRNjCo_0PlspynoJKuoEF1AYkaKaUNgMzQ4nqiTlNUM/edit#slide=id.p)
+GANs' recent development presented in the group meeting of Machine Discovery and Social Network Mining Lab, National Taiwan University: [Slides](https://docs.google.com/presentation/d/1HRNjCo_0PlspynoJKuoEF1AYkaKaUNgMzQ4nqiTlNUM/edit#slide=id.p)
 
 
 
