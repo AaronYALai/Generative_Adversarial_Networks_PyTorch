@@ -101,13 +101,16 @@ def train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
 
 
 def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4,
-              gen_lr=1e-3, n_update_dis=1, n_update_gen=1, noise_dim=10):
+              gen_lr=1e-3, n_update_dis=1, n_update_gen=1, noise_dim=10,
+              D_featmap_dim=512, G_featmap_dim=1024, n_channel=1):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
     # initialize models
-    Dis_model = DCGAN_Discriminator()
-    Gen_model = DCGAN_Generator(noise_dim=noise_dim)
+    Dis_model = DCGAN_Discriminator(featmap_dim=D_featmap_dim,
+                                    n_channel=n_channel)
+    Gen_model = DCGAN_Generator(featmap_dim=G_featmap_dim, n_channel=n_channel,
+                                noise_dim=noise_dim)
 
     if use_gpu:
         Dis_model = Dis_model.cuda()
