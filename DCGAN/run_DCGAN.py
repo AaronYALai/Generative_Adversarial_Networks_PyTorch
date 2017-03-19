@@ -42,7 +42,8 @@ def gen_noise(n_instance, n_dim=2):
 
 def train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
                 G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
-                n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=10):
+                n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=10,
+                update_max=None):
     """train DCGAN and print out the losses for D and G"""
     for epoch in range(n_epoch):
 
@@ -97,12 +98,16 @@ def train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
                 D_running_loss = 0.0
                 G_running_loss = 0.0
 
+            if update_max and i > update_max:
+                break
+
     print('Finished Training')
 
 
-def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4,
-              gen_lr=1e-3, n_update_dis=1, n_update_gen=1, noise_dim=10,
-              D_featmap_dim=512, G_featmap_dim=1024, n_channel=1):
+def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-5,
+              gen_lr=1e-4, n_update_dis=1, n_update_gen=1, noise_dim=10,
+              D_featmap_dim=512, G_featmap_dim=1024, n_channel=1,
+              update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
@@ -118,17 +123,17 @@ def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4,
 
     # assign loss function and optimizer (Adam) to D and G
     D_criterion = torch.nn.BCELoss()
-    D_optimizer = optim.Adam(Dis_model.parameters(), lr=0.00005,
+    D_optimizer = optim.Adam(Dis_model.parameters(), lr=dis_lr,
                              betas=(0.5, 0.999))
 
     G_criterion = torch.nn.BCELoss()
-    G_optimizer = optim.Adam(Gen_model.parameters(), lr=0.0002,
+    G_optimizer = optim.Adam(Gen_model.parameters(), lr=gen_lr,
                              betas=(0.5, 0.999))
 
     train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
                 G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
-                n_update_dis, n_update_gen)
+                n_update_dis, n_update_gen, update_max)
 
 
 if __name__ == '__main__':
-    run_DCGAN()
+    run_DCGAN(D_featmap_dim=64, G_featmap_dim=128)
