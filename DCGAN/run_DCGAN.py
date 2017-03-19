@@ -132,7 +132,7 @@ def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-5,
 
     train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
                 G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
-                n_update_dis, n_update_gen, update_max)
+                n_update_dis, n_update_gen, update_max=update_max)
 
 
 if __name__ == '__main__':

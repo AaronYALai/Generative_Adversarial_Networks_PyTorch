@@ -42,7 +42,8 @@ def gen_noise(n_instance):
 
 def train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
               G_optimizer, trainloader, n_epoch, batch_size,
-              n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=100):
+              n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=100,
+              update_max=None):
     """train GAN and print out the losses for D and G"""
     for epoch in range(n_epoch):
 
@@ -98,11 +99,14 @@ def train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
                 D_running_loss = 0.0
                 G_running_loss = 0.0
 
+            if update_max and i > update_max:
+                break
+
     print('Finished Training')
 
 
 def run_GAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4, gen_lr=1e-3,
-            n_update_dis=1, n_update_gen=1):
+            n_update_dis=1, n_update_gen=1, update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
@@ -123,7 +127,7 @@ def run_GAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4, gen_lr=1e-3,
 
     train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
               G_optimizer, trainloader, n_epoch, batch_size, n_update_dis,
-              n_update_gen)
+              n_update_gen, update_max=update_max)
 
 
 if __name__ == '__main__':
