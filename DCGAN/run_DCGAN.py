@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 import numpy as np
 
 from torch.autograd import Variable
-from GAN import Discriminator, Generator
+from DCGAN import DCGAN_Discriminator, DCGAN_Generator
 
 
 def load_dataset(batch_size=10, download=True):
@@ -34,16 +34,16 @@ def load_dataset(batch_size=10, download=True):
     return trainloader, testloader
 
 
-def gen_noise(n_instance):
+def gen_noise(n_instance, n_dim=2):
     """generate 2-dim uniform random noise"""
     return torch.Tensor(np.random.uniform(low=-1.0, high=1.0,
-                                          size=(n_instance, 2)))
+                                          size=(n_instance, n_dim)))
 
 
 def train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
-                G_optimizer, trainloader, n_epoch, batch_size,
-                n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=100):
-    """train GAN and print out the losses for D and G"""
+                G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
+                n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=10):
+    """train DCGAN and print out the losses for D and G"""
     for epoch in range(n_epoch):
 
         D_running_loss = 0.0
@@ -52,13 +52,12 @@ def train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
         for i, data in enumerate(trainloader, 0):
             # get the inputs from true distribution
             true_inputs, _ = data
-            true_inputs = true_inputs.view(-1, 1 * 28 * 28)
             if use_gpu:
                 true_inputs = true_inputs.cuda()
             true_inputs = Variable(true_inputs)
 
             # get the inputs from the generator
-            noises = gen_noise(batch_size)
+            noises = gen_noise(batch_size, n_dim=noise_dim)
             if use_gpu:
                 noises = noises.cuda()
             fake_inputs = Gen_model(Variable(noises))
@@ -101,29 +100,31 @@ def train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
     print('Finished Training')
 
 
-def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4, gen_lr=1e-3,
-              n_update_dis=1, n_update_gen=1):
+def run_DCGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4,
+              gen_lr=1e-3, n_update_dis=1, n_update_gen=1, noise_dim=10):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
     # initialize models
     Dis_model = DCGAN_Discriminator()
-    Gen_model = DCGAN_Generator()
+    Gen_model = DCGAN_Generator(noise_dim=noise_dim)
 
     if use_gpu:
         Dis_model = Dis_model.cuda()
         Gen_model = Gen_model.cuda()
 
-    # assign loss function and optimizer to D and G
+    # assign loss function and optimizer (Adam) to D and G
     D_criterion = torch.nn.BCELoss()
-    D_optimizer = optim.SGD(Dis_model.parameters(), lr=dis_lr, momentum=0.9)
+    D_optimizer = optim.Adam(Dis_model.parameters(), lr=0.00005,
+                             betas=(0.5, 0.999))
 
     G_criterion = torch.nn.BCELoss()
-    G_optimizer = optim.SGD(Gen_model.parameters(), lr=gen_lr, momentum=0.9)
+    G_optimizer = optim.Adam(Gen_model.parameters(), lr=0.0002,
+                             betas=(0.5, 0.999))
 
-    train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
-              G_optimizer, trainloader, n_epoch, batch_size, n_update_dis,
-              n_update_gen)
+    train_DCGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
+                G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
+                n_update_dis, n_update_gen)
 
 
 if __name__ == '__main__':
