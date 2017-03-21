@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
 # @Author: aaronlai
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class ImprovedGAN_Discriminator(nn.Module):
 
-    def __init__(self, featmap_dim=512, n_channel=1):
+    def __init__(self, featmap_dim=512, n_channel=1, use_gpu=False,
+                 n_B=128, n_C=16):
         """
         Minibatch discrimination: learn a tensor to encode side information
         from other examples in the same minibatch.
         """
         super(ImprovedGAN_Discriminator, self).__init__()
+        self.use_gpu = use_gpu
+        self.n_B = n_B
+        self.n_C = n_C
         self.featmap_dim = featmap_dim
+
         self.conv1 = nn.Conv2d(n_channel, featmap_dim / 4, 5,
                                stride=2, padding=2)
 
@@ -25,7 +31,9 @@ class ImprovedGAN_Discriminator(nn.Module):
                                stride=2, padding=2)
         self.BN3 = nn.BatchNorm2d(featmap_dim)
 
-        self.fc = nn.Linear(featmap_dim * 4 * 4, 1)
+        T_ten_init = torch.randn(featmap_dim * 4 * 4, n_B * n_C) * 0.1
+        self.T_tensor = nn.Parameter(T_ten_init, requires_grad=True)
+        self.fc = nn.Linear(featmap_dim * 4 * 4 + n_B, 1)
 
     def forward(self, x):
         """
@@ -37,6 +45,31 @@ class ImprovedGAN_Discriminator(nn.Module):
         x = F.leaky_relu(self.BN2(self.conv2(x)), negative_slope=0.2)
         x = F.leaky_relu(self.BN3(self.conv3(x)), negative_slope=0.2)
         x = x.view(-1, self.featmap_dim * 4 * 4)
+
+        T_tensor = self.T_tensor
+        if self.use_gpu:
+            T_tensor = T_tensor.cuda()
+
+        Ms = x.mm(T_tensor)
+        Ms = Ms.view(-1, self.n_B, self.n_C)
+
+        out_tensor = []
+        for i in range(Ms.size()[0]):
+
+            out_i = None
+            for j in range(Ms.size()[0]):
+                o_i = torch.sum(torch.abs(Ms[i, :, :] - Ms[j, :, :]), 1)
+                o_i = torch.exp(-o_i)
+                if out_i is None:
+                    out_i = o_i
+                else:
+                    out_i = out_i + o_i
+
+            out_tensor.append(out_i)
+
+        out_T = torch.cat(tuple(out_tensor)).view(Ms.size()[0], self.n_B)
+        x = torch.cat((x, out_T), 1)
+
         x = F.sigmoid(self.fc(x))
         return x
 
