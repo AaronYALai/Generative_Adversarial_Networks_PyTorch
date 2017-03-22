@@ -30,10 +30,10 @@ Content
 Example
 ---------
 
-#### Real
+#### Real:
 <img src="./images/real.png" width="360">
 
-#### Improved GAN
+#### Improved GAN:
 <img src="./images/ImprovedGAN.png" width="360">
 
 
