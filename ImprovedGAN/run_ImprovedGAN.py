@@ -138,4 +138,4 @@ def run_ImprovedGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-5,
 
 
 if __name__ == '__main__':
-    run_ImprovedGAN(D_featmap_dim=64, G_featmap_dim=128)
+    run_ImprovedGAN(D_featmap_dim=64, G_featmap_dim=128, batch_size=10)

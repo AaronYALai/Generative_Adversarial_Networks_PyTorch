@@ -42,7 +42,7 @@ def gen_noise(n_instance):
 
 def train_GAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
               G_optimizer, trainloader, n_epoch, batch_size,
-              n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=100,
+              n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=10,
               update_max=None):
     """train GAN and print out the losses for D and G"""
     for epoch in range(n_epoch):
