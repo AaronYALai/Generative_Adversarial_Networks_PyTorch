@@ -10,7 +10,7 @@ About
 
 The repo is about the implementations of GAN, DCGAN, Improved GAN, LAPGAN, and InfoGAN in PyTorch.
 
-My presentation about GANs' recent development: [Presentation slides](https://docs.google.com/presentation/d/1HRNjCo_0PlspynoJKuoEF1AYkaKaUNgMzQ4nqiTlNUM/edit#slide=id.p)
+My presentation about GANs' recent development (at 2017.01.17): [Presentation slides](https://docs.google.com/presentation/d/1HRNjCo_0PlspynoJKuoEF1AYkaKaUNgMzQ4nqiTlNUM/edit#slide=id.p)
 
 Presented in the group meeting of Machine Discovery and Social Network Mining Lab, National Taiwan University.
 
