@@ -31,10 +31,10 @@ Example
 ---------
 
 #### Real
-![](./images/real.png =100x20)
+<img src="./images/real.png" width="48">
 
 #### Improved GAN
-![](./images/ImprovedGAN.png =100x20)
+<img src="./images/ImprovedGAN.png" width="48">
 
 
 Usage
