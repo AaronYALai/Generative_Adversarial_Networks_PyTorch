@@ -40,10 +40,10 @@ def gen_noise(n_instance, n_dim=2):
                                           size=(n_instance, n_dim)))
 
 
-def train_ImprovedGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
-                G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
-                n_update_dis=1, n_update_gen=1, use_gpu=False, print_every=10,
-                update_max=None):
+def train_ImprovedGAN(Dis_model, Gen_model, D_criterion, G_criterion,
+                      D_optimizer, G_optimizer, trainloader, n_epoch,
+                      batch_size, noise_dim, n_update_dis=1, n_update_gen=1,
+                      use_gpu=False, print_every=10, update_max=None):
     """train ImprovedGAN and print out the losses for D and G"""
     for epoch in range(n_epoch):
 
@@ -105,17 +105,18 @@ def train_ImprovedGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimize
 
 
 def run_ImprovedGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-5,
-              gen_lr=1e-4, n_update_dis=1, n_update_gen=1, noise_dim=10,
-              D_featmap_dim=512, G_featmap_dim=1024, n_channel=1,
-              update_max=None):
+                    gen_lr=1e-4, n_update_dis=1, n_update_gen=1, noise_dim=10,
+                    D_featmap_dim=512, G_featmap_dim=1024, n_channel=1,
+                    update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
     # initialize models
     Dis_model = ImprovedGAN_Discriminator(featmap_dim=D_featmap_dim,
-                                    n_channel=n_channel)
-    Gen_model = ImprovedGAN_Generator(featmap_dim=G_featmap_dim, n_channel=n_channel,
-                                noise_dim=noise_dim)
+                                          n_channel=n_channel)
+    Gen_model = ImprovedGAN_Generator(featmap_dim=G_featmap_dim,
+                                      n_channel=n_channel,
+                                      noise_dim=noise_dim)
 
     if use_gpu:
         Dis_model = Dis_model.cuda()
@@ -130,9 +131,10 @@ def run_ImprovedGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-5,
     G_optimizer = optim.Adam(Gen_model.parameters(), lr=gen_lr,
                              betas=(0.5, 0.999))
 
-    train_ImprovedGAN(Dis_model, Gen_model, D_criterion, G_criterion, D_optimizer,
-                G_optimizer, trainloader, n_epoch, batch_size, noise_dim,
-                n_update_dis, n_update_gen, update_max=update_max)
+    train_ImprovedGAN(Dis_model, Gen_model, D_criterion, G_criterion,
+                      D_optimizer, G_optimizer, trainloader, n_epoch,
+                      batch_size, noise_dim, n_update_dis, n_update_gen,
+                      update_max=update_max)
 
 
 if __name__ == '__main__':

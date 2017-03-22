@@ -37,15 +37,15 @@ class ImprovedGAN_Discriminator(nn.Module):
 
     def forward(self, x):
         """
-        Strided convulation layers,
-        Batch Normalization after convulation but not at input layer,
-        LeakyReLU activation function with slope 0.2.
+        Architecture is similar to DCGANs
+        Add minibatch discrimination => Improved GAN.
         """
         x = F.leaky_relu(self.conv1(x), negative_slope=0.2)
         x = F.leaky_relu(self.BN2(self.conv2(x)), negative_slope=0.2)
         x = F.leaky_relu(self.BN3(self.conv3(x)), negative_slope=0.2)
         x = x.view(-1, self.featmap_dim * 4 * 4)
 
+        # #### Minibatch Discrimination ###
         T_tensor = self.T_tensor
         if self.use_gpu:
             T_tensor = T_tensor.cuda()
@@ -69,8 +69,10 @@ class ImprovedGAN_Discriminator(nn.Module):
 
         out_T = torch.cat(tuple(out_tensor)).view(Ms.size()[0], self.n_B)
         x = torch.cat((x, out_T), 1)
+        # #### Minibatch Discrimination ###
 
         x = F.sigmoid(self.fc(x))
+
         return x
 
 
