@@ -31,10 +31,10 @@ Example
 ---------
 
 #### Real
-<img src="./images/real.png" width="48">
+<img src="./images/real.png" width="360">
 
 #### Improved GAN
-<img src="./images/ImprovedGAN.png" width="48">
+<img src="./images/ImprovedGAN.png" width="360">
 
 
 Usage
