@@ -27,6 +27,15 @@ Content
 
 - Info-GAN: 
 
+Example
+---------
+
+### Real
+![Alt text](/images/real.png?raw=true "Optional Title")
+
+### Real
+![Alt text](/images/ImprovedGAN.png?raw=true "Optional Title")
+
 
 Usage
 --------
