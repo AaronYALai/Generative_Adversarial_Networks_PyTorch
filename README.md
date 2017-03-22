@@ -8,14 +8,24 @@ Generative Adversarial Networks in PyTorch
 About
 --------
 
-Implementations about GAN, Improved GAN, DCGAN, LAPGAN, and InfoGAN in PyTorch
+The repo is about the implementations of GAN, DCGAN, Improved GAN, LAPGAN, and InfoGAN in PyTorch.
 
-GANs' recent development presented in the group meeting of Machine Discovery and Social Network Mining Lab, National Taiwan University: [Slides](https://docs.google.com/presentation/d/1HRNjCo_0PlspynoJKuoEF1AYkaKaUNgMzQ4nqiTlNUM/edit#slide=id.p)
+My presentation about GANs' recent development: [Presentation slides](https://docs.google.com/presentation/d/1HRNjCo_0PlspynoJKuoEF1AYkaKaUNgMzQ4nqiTlNUM/edit#slide=id.p)
 
-
+Presented in the group meeting of Machine Discovery and Social Network Mining Lab, National Taiwan University.
 
 Content
 --------
+
+- GAN: 
+
+- DC-GAN: 
+
+- LAP-GAN: 
+
+- Improved GAN: 
+
+- Info-GAN: 
 
 
 Usage
@@ -43,3 +53,17 @@ Install pytorch and all dependencies and run the model (in Linux):
     python run_GAN.py
 
 More details about the installation about PyTorch: <http://pytorch.org>
+
+
+References
+--------
+
+- GAN: I. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A. Courville, and Y. Bengio, “Generative adversarial nets,” NIPS, 2014.
+
+- DC-GAN: Radford, Alec, Luke Metz, and Soumith Chintala. "Unsupervised representation learning with deep convolutional generative adversarial networks." arXiv 2015.
+
+- LAP-GAN: Denton, Emily L., Soumith Chintala, and Rob Fergus. "Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks." NIPS 2015.
+
+- Improved GAN: Salimans, T., Goodfellow, I., Zaremba, W., Cheung, V., Radford, A., & Chen, X. “Improved techniques for training gans.” NIPS 2016.
+
+- Info-GAN: Chen, X., Duan, Y., Houthooft, R., Schulman, J., Sutskever, I., & Abbeel, P. “Infogan: Interpretable representation learning by information maximizing generative adversarial nets.” NIPS 2016.
