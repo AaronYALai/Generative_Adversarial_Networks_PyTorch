@@ -30,11 +30,11 @@ Content
 Example
 ---------
 
-### Real
-![Alt text](/images/real.png =100x20)
+#### Real
+![](./images/real.png =100x20)
 
-### Improved GAN
-![Alt text](/images/ImprovedGAN.png =100x20)
+#### Improved GAN
+![](./images/ImprovedGAN.png =100x20)
 
 
 Usage
