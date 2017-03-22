@@ -31,10 +31,10 @@ Example
 ---------
 
 ### Real
-![Alt text](/images/real.png?raw=true =100x20 "Optional Title")
+![Alt text](/images/real.png =100x20)
 
 ### Improved GAN
-![Alt text](/images/ImprovedGAN.png?raw=true =100x20 "Optional Title")
+![Alt text](/images/ImprovedGAN.png =100x20)
 
 
 Usage
