@@ -17,11 +17,11 @@ Presented in the group meeting of Machine Discovery and Social Network Mining La
 Content
 --------
 
-- GAN: invented "adversarial nets" framework - a generative model G and a discriminative model D play a minimax two-player game.
+- Generative Adversarial Nets (GAN): invented "adversarial nets" framework - a generative model G and a discriminative model D play a minimax two-player game.
 
 - DC-GAN: proposed a set of constraints on the architectural topology of Convolutional GANs that make them stable to train in most settings.
 
-- LAP-GAN: a cascade of generative models within a Laplacian pyramid framework to generate images in a coarse-to-fine fashion to generate images at high-resolution.
+- LAP-GAN: a cascade of generative models within a Laplacian pyramid framework to generate images in a coarse-to-fine fashion (high-resolution).
 
 - Improved GAN (minibatch discrimination): allow the discriminator to look at multiple data examples in combination by incorporating the closeness between examples in a minibatch as side information.
 
