@@ -7,6 +7,7 @@ import torch.nn.functional as F
 
 
 class CondiGAN_Discriminator(nn.Module):
+    """Conditional GAN Discriminator"""
 
     def __init__(self, featmap_dim=512, n_channel=1):
         super(DCGAN_Discriminator, self).__init__()
@@ -45,6 +46,7 @@ class CondiGAN_Discriminator(nn.Module):
 
 
 class CondiGAN_Generator(nn.Module):
+    """Conditional GAN Generator"""
 
     def __init__(self, featmap_dim=1024, n_channel=1, noise_dim=10):
         super(DCGAN_Generator, self).__init__()
@@ -83,6 +85,7 @@ class CondiGAN_Generator(nn.Module):
 
 
 class LAPGAN(object):
+    """Laplacian Generative Adversarial Networks"""
 
     def __init__(self, n_level, D_featmap_dim=64, G_featmap_dim=128, use_gpu=False, noise_dim=10):
         self.Dis_models = []
