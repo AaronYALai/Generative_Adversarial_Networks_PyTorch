@@ -25,7 +25,7 @@ Content
 
 - Improved GAN (minibatch discrimination): allow the discriminator to look at multiple data examples in combination by incorporating the closeness between examples in a minibatch as side information.
 
-- Info-GAN: 
+- Info-GAN: an information-theoretic modification to the objective of Generative Adversarial Network that encourages it to learn interpretable and disentangled representations.
 
 Example
 ---------
