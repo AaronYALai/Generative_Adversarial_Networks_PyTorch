@@ -2,13 +2,15 @@
 # @Author: aaronlai
 
 import torch
+import torch.nn as nn
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 import numpy as np
+import cv2
 
 from torch.autograd import Variable
-from LAPGAN import LAPGAN_Discriminator, LAPGAN_Generator, gen_noise
+from LAPGAN import LAPGAN, gen_noise
 
 
 def load_dataset(batch_size=10, download=True):
@@ -34,99 +36,147 @@ def load_dataset(batch_size=10, download=True):
     return trainloader, testloader
 
 
-def train_LAPGAN(Dis_model, Gen_model, D_criterion, G_criterion,
-                 D_optimizer, G_optimizer, trainloader, n_epoch,
+def train_LAPGAN(LapGan_model, n_level, D_criterions, G_criterions,
+                 D_optimizers, G_optimizers, trainloader, n_epoch,
                  batch_size, noise_dim, n_update_dis=1, n_update_gen=1,
                  use_gpu=False, print_every=10, update_max=None):
-    """train LAPGAN and print out the losses for D and G"""
+    """train LAPGAN and print out the losses for Ds and Gs"""
     for epoch in range(n_epoch):
 
-        D_running_loss = 0.0
-        G_running_loss = 0.0
+        D_running_losses = [0.0 for i in range(n_level)]
+        G_running_losses = [0.0 for i in range(n_level)]
 
-        for i, data in enumerate(trainloader, 0):
+        for ind, data in enumerate(trainloader, 0):
             # get the inputs from true distribution
-            true_inputs, _ = data
-            if use_gpu:
-                true_inputs = true_inputs.cuda()
-            true_inputs = Variable(true_inputs)
+            true_inputs, lab = data
+            down_imgs = true_inputs.numpy()
+            n_minibatch, n_channel, _, _ = down_imgs.shape
 
-            # get the inputs from the generator
-            noises = gen_noise(batch_size, n_dim=noise_dim)
-            if use_gpu:
-                noises = noises.cuda()
-            fake_inputs = Gen_model(Variable(noises))
-            inputs = torch.cat([true_inputs, fake_inputs])
+            for l in range(n_level):
+                # calculate input images for models at the particular level
+                if l == (n_level - 1):
+                    condi_inputs = None
+                    true_inputs = Variable(torch.Tensor(down_imgs))
+                    if use_gpu:
+                        true_inputs = true_inputs.cuda()
+                else:
+                    new_down_imgs = []
+                    up_imgs = []
+                    residual_imgs = []
 
-            # get the labels
-            labels = np.zeros(2 * batch_size)
-            labels[:batch_size] = 1
-            labels = torch.from_numpy(labels.astype(np.float32))
-            if use_gpu:
-                labels = labels.cuda()
-            labels = Variable(labels)
+                    # compute a Laplacian Pyramid
+                    for i in range(n_minibatch):
+                        down_img = []
+                        up_img = []
+                        residual_img = []
 
-            # Discriminator
-            D_optimizer.zero_grad()
-            outputs = Dis_model(inputs)
-            D_loss = D_criterion(outputs[:, 0], labels)
-            if i % n_update_dis == 0:
-                D_loss.backward(retain_variables=True)
-                D_optimizer.step()
+                        for j in range(n_channel):
+                            previous = down_imgs[i, j, :]
+                            down_img.append(cv2.pyrDown(previous))
+                            up_img.append(cv2.pyrUp(down_img[-1]))
+                            residual_img.append(previous - up_img[-1])
 
-            # Generator
-            if i % n_update_gen == 0:
-                G_optimizer.zero_grad()
-                G_loss = G_criterion(outputs[batch_size:, 0],
-                                     labels[:batch_size])
-                G_loss.backward()
-                G_optimizer.step()
+                        new_down_imgs.append(down_img)
+                        up_imgs.append(up_img)
+                        residual_imgs.append(residual_img)
 
-            # print statistics
-            D_running_loss += D_loss.data[0]
-            G_running_loss += G_loss.data[0]
-            if i % print_every == (print_every - 1):
-                print('[%d, %5d] D loss: %.3f ; G loss: %.3f' %
-                      (epoch+1, i+1, D_running_loss / print_every,
-                       G_running_loss / print_every))
-                D_running_loss = 0.0
-                G_running_loss = 0.0
+                    down_imgs = np.array(new_down_imgs)
+                    up_imgs = np.array(up_imgs)
+                    residual_imgs = np.array(residual_imgs)
 
-            if update_max and i > update_max:
+                    condi_inputs = Variable(torch.Tensor(up_imgs))
+                    true_inputs = Variable(torch.Tensor(residual_imgs))
+                    if use_gpu:
+                        condi_inputs = condi_inputs.cuda()
+                        true_inputs = true_inputs.cuda()
+
+                # get inputs for discriminators from generators and real data
+                noise = Variable(gen_noise(batch_size, noise_dim))
+                if use_gpu:
+                    noise = noise.cuda()
+                fake_inputs = LapGan_model.Gen_models[l](noise, condi_inputs)
+                inputs = torch.cat([true_inputs, fake_inputs])
+                labels = np.zeros(2 * batch_size)
+                labels[:batch_size] = 1
+                labels = Variable(torch.from_numpy(labels.astype(np.float32)))
+                if use_gpu:
+                    labels = labels.cuda()
+
+                # Discriminator
+                D_optimizers[l].zero_grad()
+                if condi_inputs:
+                    condi_inputs = torch.cat((condi_inputs, condi_inputs))
+                outputs = LapGan_model.Dis_models[l](inputs, condi_inputs)
+                D_loss = D_criterions[l](outputs[:, 0], labels)
+
+                if ind % n_update_dis == 0:
+                    D_loss.backward(retain_variables=True)
+                    D_optimizers[l].step()
+
+                # Generator
+                if ind % n_update_gen == 0:
+                    G_optimizers[l].zero_grad()
+                    G_loss = G_criterions[l](outputs[batch_size:, 0],
+                                             labels[:batch_size])
+                    G_loss.backward()
+                    G_optimizers[l].step()
+
+                # print statistics
+                D_running_losses[l] += D_loss.data[0]
+                G_running_losses[l] += G_loss.data[0]
+                if ind % print_every == (print_every - 1):
+                    print('[%d, %5d, %d] D loss: %.3f ; G loss: %.3f' %
+                          (epoch+1, ind+1, l+1,
+                           D_running_losses[l] / print_every,
+                           G_running_losses[l] / print_every))
+                    D_running_losses[l] = 0.0
+                    G_running_losses[l] = 0.0
+
+            if update_max and ind > update_max:
                 break
 
     print('Finished Training')
 
 
-def run_LAPGAN(n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-5,
-               gen_lr=1e-4, n_update_dis=1, n_update_gen=1, noise_dim=10,
-               D_featmap_dim=512, G_featmap_dim=1024, n_channel=1,
+def run_LAPGAN(n_level=3, n_epoch=2, batch_size=50, use_gpu=False,
+               dis_lrs=None, gen_lrs=None, n_update_dis=1, n_update_gen=1,
+               noise_dim=10, D_featmap_dim=128, condi_D_featmap_dim=128,
+               G_featmap_dim=256, condi_G_featmap_dim=128, n_channel=1,
                update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
     # initialize models
-    Dis_model = LAPGAN_Discriminator(featmap_dim=D_featmap_dim,
-                                     n_channel=n_channel)
-    Gen_model = LAPGAN_Generator(featmap_dim=G_featmap_dim,
-                                 n_channel=n_channel,
-                                 noise_dim=noise_dim)
-
-    if use_gpu:
-        Dis_model = Dis_model.cuda()
-        Gen_model = Gen_model.cuda()
+    LapGan_model = LAPGAN(n_level, noise_dim, D_featmap_dim,
+                          condi_D_featmap_dim, G_featmap_dim,
+                          condi_G_featmap_dim, use_gpu, n_channel)
 
     # assign loss function and optimizer (Adam) to D and G
-    D_criterion = torch.nn.BCELoss()
-    D_optimizer = optim.Adam(Dis_model.parameters(), lr=dis_lr,
-                             betas=(0.5, 0.999))
+    D_criterions = []
+    G_criterions = []
 
-    G_criterion = torch.nn.BCELoss()
-    G_optimizer = optim.Adam(Gen_model.parameters(), lr=gen_lr,
-                             betas=(0.5, 0.999))
+    D_optimizers = []
+    G_optimizers = []
 
-    train_LAPGAN(Dis_model, Gen_model, D_criterion, G_criterion,
-                 D_optimizer, G_optimizer, trainloader, n_epoch,
+    if not dis_lrs:
+        dis_lrs = [0.0005, 0.0003, 0.001]
+
+    if not gen_lrs:
+        gen_lrs = [0.002, 0.005, 0.01]
+
+    for l in range(n_level):
+        D_criterions.append(nn.BCELoss())
+        D_optim = optim.Adam(LapGan_model.Dis_models[l].parameters(),
+                             lr=dis_lrs[l], betas=(0.5, 0.999))
+        D_optimizers.append(D_optim)
+
+        G_criterions.append(nn.BCELoss())
+        G_optim = optim.Adam(LapGan_model.Gen_models[l].parameters(),
+                             lr=gen_lrs[l], betas=(0.5, 0.999))
+        G_optimizers.append(G_optim)
+
+    train_LAPGAN(LapGan_model, n_level, D_criterions, G_criterions,
+                 D_optimizers, G_optimizers, trainloader, n_epoch,
                  batch_size, noise_dim, n_update_dis, n_update_gen,
                  update_max=update_max)
 
