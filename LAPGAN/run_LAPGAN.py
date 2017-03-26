@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 import numpy as np
 
 from torch.autograd import Variable
-from LAPGAN import LAPGAN_Discriminator, LAPGAN_Generator
+from LAPGAN import LAPGAN_Discriminator, LAPGAN_Generator, gen_noise
 
 
 def load_dataset(batch_size=10, download=True):
@@ -32,12 +32,6 @@ def load_dataset(batch_size=10, download=True):
                                              shuffle=False, num_workers=2)
 
     return trainloader, testloader
-
-
-def gen_noise(n_instance, n_dim=2):
-    """generate 2-dim uniform random noise"""
-    return torch.Tensor(np.random.uniform(low=-1.0, high=1.0,
-                                          size=(n_instance, n_dim)))
 
 
 def train_LAPGAN(Dis_model, Gen_model, D_criterion, G_criterion,
