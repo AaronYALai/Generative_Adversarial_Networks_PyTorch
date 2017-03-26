@@ -138,7 +138,7 @@ def train_LAPGAN(LapGan_model, n_level, D_criterions, G_criterions,
     print('Finished Training')
 
 
-def run_LAPGAN(n_level=3, n_epoch=2, batch_size=50, use_gpu=False,
+def run_LAPGAN(n_level=3, n_epoch=2, batch_size=20, use_gpu=False,
                dis_lrs=None, gen_lrs=None, n_update_dis=1, n_update_gen=1,
                noise_dim=10, D_featmap_dim=128, condi_D_featmap_dim=128,
                G_featmap_dim=256, condi_G_featmap_dim=128, n_channel=1,
@@ -159,10 +159,10 @@ def run_LAPGAN(n_level=3, n_epoch=2, batch_size=50, use_gpu=False,
     G_optimizers = []
 
     if not dis_lrs:
-        dis_lrs = [0.0005, 0.0003, 0.001]
+        dis_lrs = [0.0002, 0.0003, 0.001]
 
     if not gen_lrs:
-        gen_lrs = [0.002, 0.005, 0.01]
+        gen_lrs = [0.001, 0.005, 0.01]
 
     for l in range(n_level):
         D_criterions.append(nn.BCELoss())
@@ -182,4 +182,5 @@ def run_LAPGAN(n_level=3, n_epoch=2, batch_size=50, use_gpu=False,
 
 
 if __name__ == '__main__':
-    run_LAPGAN(D_featmap_dim=64, G_featmap_dim=128, batch_size=10)
+    run_LAPGAN(n_epoch=1, D_featmap_dim=64, condi_D_featmap_dim=64,
+               G_featmap_dim=128, condi_G_featmap_dim=64, update_max=50)
