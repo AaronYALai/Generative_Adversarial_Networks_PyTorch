@@ -142,7 +142,7 @@ def run_LAPGAN(n_level=3, n_epoch=2, batch_size=20, use_gpu=False,
                dis_lrs=None, gen_lrs=None, n_update_dis=1, n_update_gen=1,
                noise_dim=10, D_featmap_dim=128, condi_D_featmap_dim=128,
                G_featmap_dim=256, condi_G_featmap_dim=128, n_channel=1,
-               update_max=None):
+               n_sample=25, update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
@@ -179,6 +179,8 @@ def run_LAPGAN(n_level=3, n_epoch=2, batch_size=20, use_gpu=False,
                  D_optimizers, G_optimizers, trainloader, n_epoch,
                  batch_size, noise_dim, n_update_dis, n_update_gen,
                  update_max=update_max)
+
+    return LapGan_model.generate(n_sample)
 
 
 if __name__ == '__main__':
