@@ -216,7 +216,7 @@ class CondiGAN_Generator(nn.Module):
 class LAPGAN(object):
 
     def __init__(self, n_level, noise_dim=10, D_featmap_dim=64,
-                 condi_D_featmap_dim=64, G_featmap_dim=128,
+                 condi_D_featmap_dim=64, G_featmap_dim=256,
                  condi_G_featmap_dim=64, use_gpu=False, n_channel=1):
         """
         Initialize a group of discriminators and generators for LAPGAN
@@ -257,8 +257,10 @@ class LAPGAN(object):
             self.Dis_models.append(Dis_model)
             self.Gen_models.append(Gen_model)
 
-    def generate(self, batchsize):
+    def generate(self, batchsize, get_level=None, generator=False):
         """Generate images from LAPGAN generators"""
+        self.outputs = []
+        self.generator_outputs = []
         for level in range(self.n_level):
             Gen_model = self.Gen_models[self.n_level - level - 1]
 
@@ -273,6 +275,7 @@ class LAPGAN(object):
                 if self.use_gpu:
                     output_imgs = output_imgs.cpu()
                 output_imgs = output_imgs.data.numpy()
+                self.generator_outputs.append(output_imgs)
             else:
                 # upsize
                 input_imgs = np.array([[cv2.pyrUp(output_imgs[i, j, :])
@@ -287,8 +290,19 @@ class LAPGAN(object):
                 if self.use_gpu:
                     residual_imgs = residual_imgs.cpu()
                 output_imgs = residual_imgs.data.numpy() + input_imgs
+                self.generator_outputs.append(residual_imgs.data.numpy())
 
-        return output_imgs
+            self.outputs.append(output_imgs)
+
+        if get_level is None:
+            get_level = -1
+
+        if generator:
+            result_imgs = self.generator_outputs[get_level]
+        else:
+            result_imgs = self.outputs[get_level]
+
+        return result_imgs
 
 
 def gen_noise(n_instance, n_dim=2):
