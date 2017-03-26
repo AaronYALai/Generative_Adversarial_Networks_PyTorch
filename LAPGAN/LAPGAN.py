@@ -12,8 +12,8 @@ from torch.autograd import Variable
 
 class CondiGAN_Discriminator(nn.Module):
 
-    def __init__(self, n_layer=3, condition=True, featmap_dim=256, n_channel=1,
-                 condi_featmap_dim=256):
+    def __init__(self, n_layer=3, condition=True, use_gpu=False,
+                 featmap_dim=256, n_channel=1, condi_featmap_dim=256):
         """
         Conditional Discriminator.
         Architecture brought from DCGAN.
@@ -34,11 +34,17 @@ class CondiGAN_Discriminator(nn.Module):
                 n_conv_in = int(featmap_dim / (2**(layer + 1)))
             n_conv_out = int(featmap_dim / (2**layer))
 
-            self.convs.append(nn.Conv2d(n_conv_in, n_conv_out,
-                              5, stride=2, padding=2))
+            _conv = nn.Conv2d(n_conv_in, n_conv_out, kernel_size=5,
+                              stride=2, padding=2)
+            if use_gpu:
+                _conv = _conv.cuda()
+            self.convs.append(_conv)
 
             if layer != (self.n_layer - 1):
-                self.BNs.append(nn.BatchNorm2d(n_conv_out))
+                _BN = nn.BatchNorm2d(n_conv_out)
+                if use_gpu:
+                    _BN = _BN.cuda()
+                self.BNs.append(_BN)
 
         # extra image information to be conditioned on
         if self.condition:
@@ -53,11 +59,17 @@ class CondiGAN_Discriminator(nn.Module):
                     n_conv_in = int(condi_featmap_dim / (2**(layer + 1)))
                 n_conv_out = int(condi_featmap_dim / (2**layer))
 
-                self.convs_condi.append(nn.Conv2d(n_conv_in, n_conv_out,
-                                        5, stride=2, padding=2))
+                _conv = nn.Conv2d(n_conv_in, n_conv_out, kernel_size=5,
+                                  stride=2, padding=2)
+                if use_gpu:
+                    _conv = _conv.cuda()
+                self.convs_condi.append(_conv)
 
                 if layer != (self.n_layer - 1):
-                    self.BNs_condi.append(nn.BatchNorm2d(n_conv_out))
+                    _BN = nn.BatchNorm2d(n_conv_out)
+                    if use_gpu:
+                        _BN = _BN.cuda()
+                    self.BNs_condi.append(_BN)
 
         # output layer
         if self.condition:
@@ -102,7 +114,7 @@ class CondiGAN_Discriminator(nn.Module):
 
 class CondiGAN_Generator(nn.Module):
 
-    def __init__(self, noise_dim=10, n_layer=3, condition=True,
+    def __init__(self, noise_dim=10, n_layer=3, condition=True, use_gpu=False,
                  featmap_dim=256, n_channel=1, condi_featmap_dim=256):
         """
         Conditional Generator.
@@ -125,11 +137,17 @@ class CondiGAN_Generator(nn.Module):
                     n_conv_in = int(condi_featmap_dim / (2**(layer + 1)))
                 n_conv_out = int(condi_featmap_dim / (2**layer))
 
-                self.convs_condi.append(nn.Conv2d(n_conv_in, n_conv_out,
-                                        5, stride=2, padding=2))
+                _conv = nn.Conv2d(n_conv_in, n_conv_out, kernel_size=5,
+                                  stride=2, padding=2)
+                if use_gpu:
+                    _conv = _conv.cuda()
+                self.convs_condi.append(_conv)
 
                 if layer != (self.n_layer - 1):
-                    self.BNs_condi.append(nn.BatchNorm2d(n_conv_out))
+                    _BN = nn.BatchNorm2d(n_conv_out)
+                    if use_gpu:
+                        _BN = _BN.cuda()
+                    self.BNs_condi.append(_BN)
 
         # calculate input dimension
         if self.condition:
@@ -151,11 +169,17 @@ class CondiGAN_Generator(nn.Module):
             n_conv_in = featmap_dim / (2 ** (self.n_layer - layer - 1))
 
             n_width = 5 if layer == (self.n_layer - 1) else 6
-            self.convs.append(nn.ConvTranspose2d(n_conv_in, n_conv_out,
-                              n_width, stride=2, padding=2))
+            _conv = nn.ConvTranspose2d(n_conv_in, n_conv_out, n_width,
+                                       stride=2, padding=2)
+            if use_gpu:
+                _conv = _conv.cuda()
+            self.convs.append(_conv)
 
             if layer != 0:
-                self.BNs.append(nn.BatchNorm2d(n_conv_out))
+                _BN = nn.BatchNorm2d(n_conv_out)
+                if use_gpu:
+                    _BN = _BN.cuda()
+                self.BNs.append(_BN)
 
     def forward(self, x, condi_x=None):
         """
@@ -191,16 +215,17 @@ class CondiGAN_Generator(nn.Module):
 
 class LAPGAN(object):
 
-    def __init__(self, n_level, noise_dim=10, D_featmap_dim=64, condi_D_featmap_dim=64,
-                 G_featmap_dim=128, condi_G_featmap_dim=64, use_gpu=False, n_channel=1):
+    def __init__(self, n_level, noise_dim=10, D_featmap_dim=64,
+                 condi_D_featmap_dim=64, G_featmap_dim=128,
+                 condi_G_featmap_dim=64, use_gpu=False, n_channel=1):
         """
-        Initialize a group of discriminators and generators for GAN with Laplacian Pyramid
+        Initialize a group of discriminators and generators for LAPGAN
         n_level: number of levels in the Laplacian Pyramid
         noise_dim: dimension of random noise to feed into the last generator
-        D_featmap_dim: discriminator, number of feature maps in the last layer of CNN
-        condi_D_featmap_dim: number of feature maps in the last layer of CNN that process extra information
-        G_featmap_dim: generator, number of feature maps in the first layer of deconv-NN
-        condi_G_featmap_dim: number of feature maps in the last layer of CNN that process extra information
+        D_featmap_dim: discriminator, (#feature maps) in the last layer of CNN
+        condi_D_featmap_dim: (#feature maps) of extra info CNN's last layer
+        G_featmap_dim: generator, (#feature maps) of deconvNN's first layer
+        condi_G_featmap_dim: (#feature maps) of extra info CNN's last layer
         use_gpu: to use GPU computation or not
         n_channel: number of channel for input images
         """
@@ -218,10 +243,12 @@ class LAPGAN(object):
             else:
                 condition = True
 
-            Dis_model = CondiGAN_Discriminator(n_layer, condition, D_featmap_dim,
-                                               n_channel, condi_D_featmap_dim)
+            Dis_model = CondiGAN_Discriminator(n_layer, condition, use_gpu,
+                                               D_featmap_dim, n_channel,
+                                               condi_D_featmap_dim)
             Gen_model = CondiGAN_Generator(noise_dim, n_layer, condition,
-                                           G_featmap_dim, n_channel, condi_G_featmap_dim)
+                                           use_gpu, G_featmap_dim, n_channel,
+                                           condi_G_featmap_dim)
 
             if use_gpu:
                 Dis_model = Dis_model.cuda()
@@ -248,7 +275,9 @@ class LAPGAN(object):
                 output_imgs = output_imgs.data.numpy()
             else:
                 # upsize
-                input_imgs = np.array([[cv2.pyrUp(output_imgs[i, j, :]) for j in range(self.n_channel)] for i in range(batchsize)])
+                input_imgs = np.array([[cv2.pyrUp(output_imgs[i, j, :])
+                                      for j in range(self.n_channel)]
+                                      for i in range(batchsize)])
                 condi_imgs = Variable(torch.Tensor(input_imgs))
                 if self.use_gpu:
                     condi_imgs = condi_imgs.cuda()
