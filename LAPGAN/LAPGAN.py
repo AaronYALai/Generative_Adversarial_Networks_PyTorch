@@ -12,8 +12,9 @@ from torch.autograd import Variable
 
 class CondiGAN_Discriminator(nn.Module):
 
-    def __init__(self, n_layer=3, condition=True, use_gpu=False,
-                 featmap_dim=256, n_channel=1, condi_featmap_dim=256):
+    def __init__(self, n_layer=3, condition=True, n_condition=100,
+                 use_gpu=False, featmap_dim=256, n_channel=1,
+                 condi_featmap_dim=256):
         """
         Conditional Discriminator.
         Architecture brought from DCGAN.
@@ -71,12 +72,12 @@ class CondiGAN_Discriminator(nn.Module):
                         _BN = _BN.cuda()
                     self.BNs_condi.append(_BN)
 
-        # output layer
-        if self.condition:
-            n_hidden = int((featmap_dim + condi_featmap_dim) * 4 * 4)
-        else:
-            n_hidden = int(featmap_dim * 4 * 4)
+            self.fc_c = nn.Linear(condi_featmap_dim * 4 * 4, n_condition)
 
+        # output layer
+        n_hidden = featmap_dim * 4 * 4
+        if self.condition:
+            n_hidden += n_condition
         self.fc = nn.Linear(n_hidden, 1)
 
     def forward(self, x, condi_x=None):
@@ -104,6 +105,7 @@ class CondiGAN_Discriminator(nn.Module):
                                            negative_slope=0.2)
 
             condi_x = condi_x.view(-1, self.condi_featmap_dim * 4 * 4)
+            condi_x = self.fc_c(condi_x)
             x = torch.cat((x, condi_x), 1)
 
         # output layer
@@ -114,8 +116,9 @@ class CondiGAN_Discriminator(nn.Module):
 
 class CondiGAN_Generator(nn.Module):
 
-    def __init__(self, noise_dim=10, n_layer=3, condition=True, use_gpu=False,
-                 featmap_dim=256, n_channel=1, condi_featmap_dim=256):
+    def __init__(self, noise_dim=10, n_layer=3, condition=True,
+                 n_condition=100, use_gpu=False, featmap_dim=256, n_channel=1,
+                 condi_featmap_dim=256):
         """
         Conditional Generator.
         Architecture brought from DCGAN.
@@ -149,11 +152,12 @@ class CondiGAN_Generator(nn.Module):
                         _BN = _BN.cuda()
                     self.BNs_condi.append(_BN)
 
+            self.fc_c = nn.Linear(condi_featmap_dim * 4 * 4, n_condition)
+
         # calculate input dimension
+        n_input = noise_dim
         if self.condition:
-            n_input = int(noise_dim + condi_featmap_dim * 4 * 4)
-        else:
-            n_input = noise_dim
+            n_input += n_condition
 
         # Generator
         self.featmap_dim = featmap_dim
@@ -197,6 +201,7 @@ class CondiGAN_Generator(nn.Module):
                                            negative_slope=0.2)
 
             condi_x = condi_x.view(-1, self.condi_featmap_dim * 4 * 4)
+            condi_x = self.fc_c(condi_x)
             x = torch.cat((x, condi_x), 1)
 
         x = self.fc1(x)
@@ -215,9 +220,10 @@ class CondiGAN_Generator(nn.Module):
 
 class LAPGAN(object):
 
-    def __init__(self, n_level, noise_dim=10, D_featmap_dim=64,
-                 condi_D_featmap_dim=64, G_featmap_dim=256,
-                 condi_G_featmap_dim=64, use_gpu=False, n_channel=1):
+    def __init__(self, n_level, noise_dim=10, n_condition=100,
+                 D_featmap_dim=64, condi_D_featmap_dim=64,
+                 G_featmap_dim=256, condi_G_featmap_dim=64,
+                 use_gpu=False, n_channel=1):
         """
         Initialize a group of discriminators and generators for LAPGAN
         n_level: number of levels in the Laplacian Pyramid
@@ -243,12 +249,12 @@ class LAPGAN(object):
             else:
                 condition = True
 
-            Dis_model = CondiGAN_Discriminator(n_layer, condition, use_gpu,
-                                               D_featmap_dim, n_channel,
-                                               condi_D_featmap_dim)
+            Dis_model = CondiGAN_Discriminator(n_layer, condition, n_condition,
+                                               use_gpu, D_featmap_dim,
+                                               n_channel, condi_D_featmap_dim)
             Gen_model = CondiGAN_Generator(noise_dim, n_layer, condition,
-                                           use_gpu, G_featmap_dim, n_channel,
-                                           condi_G_featmap_dim)
+                                           n_condition, use_gpu, G_featmap_dim,
+                                           n_channel, condi_G_featmap_dim)
 
             if use_gpu:
                 Dis_model = Dis_model.cuda()

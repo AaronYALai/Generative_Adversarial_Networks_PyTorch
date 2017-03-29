@@ -140,14 +140,15 @@ def train_LAPGAN(LapGan_model, n_level, D_criterions, G_criterions,
 
 def run_LAPGAN(n_level=3, n_epoch=2, batch_size=20, use_gpu=False,
                dis_lrs=None, gen_lrs=None, n_update_dis=1, n_update_gen=1,
-               noise_dim=10, D_featmap_dim=128, condi_D_featmap_dim=128,
-               G_featmap_dim=256, condi_G_featmap_dim=128, n_channel=1,
-               n_sample=25, update_max=None):
+               noise_dim=10, n_condition=100, D_featmap_dim=128,
+               condi_D_featmap_dim=128, G_featmap_dim=256,
+               condi_G_featmap_dim=128, n_channel=1, n_sample=25,
+               update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
     # initialize models
-    LapGan_model = LAPGAN(n_level, noise_dim, D_featmap_dim,
+    LapGan_model = LAPGAN(n_level, noise_dim, n_condition, D_featmap_dim,
                           condi_D_featmap_dim, G_featmap_dim,
                           condi_G_featmap_dim, use_gpu, n_channel)
 
