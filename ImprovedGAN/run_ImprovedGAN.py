@@ -35,7 +35,7 @@ def load_dataset(batch_size=10, download=True):
 
 
 def gen_noise(n_instance, n_dim=2):
-    """generate 2-dim uniform random noise"""
+    """generate n-dim uniform random noise"""
     return torch.Tensor(np.random.uniform(low=-1.0, high=1.0,
                                           size=(n_instance, n_dim)))
 
