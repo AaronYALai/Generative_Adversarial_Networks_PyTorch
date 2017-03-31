@@ -21,11 +21,11 @@ Content
 
 - DC-GAN: proposed a set of constraints on the architectural topology of Convolutional GANs that make them stable to train in most settings.
 
-- LAP-GAN: a cascade of generative models within a Laplacian pyramid framework to generate images in a coarse-to-fine fashion (high-resolution).
+- LAP-GAN (ongoing...): a cascade of generative models within a Laplacian pyramid framework to generate images in a coarse-to-fine fashion (high-resolution).
 
 - Improved GAN (minibatch discrimination): allow the discriminator to look at multiple data examples in combination by incorporating the closeness between examples in a minibatch as side information.
 
-- Info-GAN: an information-theoretic modification to the objective of Generative Adversarial Network that encourages it to learn interpretable and disentangled representations.
+- Info-GAN (ongoing...): an information-theoretic modification to the objective of Generative Adversarial Network that encourages it to learn interpretable and disentangled representations.
 
 Example
 ---------
