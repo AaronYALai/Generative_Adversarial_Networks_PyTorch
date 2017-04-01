@@ -71,11 +71,11 @@ class InfoGAN_Discriminator(nn.Module):
 
         # output layer
         x = self.fc(x)
-        x[0] = F.sigmoid(x[0].clone())
+        x[:, 0] = F.sigmoid(x[:, 0].clone())
         for j in range(self.n_discrete):
             start = 1 + self.n_conti + j * self.num_category
             end = start + self.num_category
-            x[start:end] = F.softmax(x[start:end].clone())
+            x[:, start:end] = F.softmax(x[:, start:end].clone())
 
         return x
 
