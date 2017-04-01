@@ -64,7 +64,7 @@ def train_InfoGAN(InfoGAN_Dis, InfoGAN_Gen, D_criterion, G_criterion,
                   n_conti, n_discrete, mean, std, num_category, trainloader,
                   n_epoch, batch_size, noise_dim,
                   n_update_dis=1, n_update_gen=1, use_gpu=False,
-                  print_every=30, update_max=None):
+                  print_every=50, update_max=None):
     """train InfoGAN and print out the losses for D and G"""
 
     for epoch in range(n_epoch):
@@ -75,18 +75,20 @@ def train_InfoGAN(InfoGAN_Dis, InfoGAN_Gen, D_criterion, G_criterion,
         for i, data in enumerate(trainloader, 0):
             # get the inputs from true distribution
             true_inputs, lab = data
+            true_inputs = Variable(true_inputs)
             if use_gpu:
-                true_inputs = Variable(true_inputs.cuda())
+                true_inputs = true_inputs.cuda()
 
             # get inputs (noises and codes) for Generator
-            noises = gen_noise(batch_size, n_dim=noise_dim)
-            conti_codes = gen_conti_codes(batch_size, n_conti, mean, std)
-            discr_codes = gen_discrete_code(batch_size, n_discrete,
-                                            num_category)
+            noises = Variable(gen_noise(batch_size, n_dim=noise_dim))
+            conti_codes = Variable(gen_conti_codes(batch_size, n_conti,
+                                                   mean, std))
+            discr_codes = Variable(gen_discrete_code(batch_size, n_discrete,
+                                                     num_category))
             if use_gpu:
-                noises = Variable(noises.cuda())
-                conti_codes = Variable(conti_codes.cuda())
-                discr_codes = Variable(discr_codes.cuda())
+                noises = noises.cuda()
+                conti_codes = conti_codes.cuda()
+                discr_codes = discr_codes.cuda()
 
             # generate fake images
             gen_inputs = torch.cat((noises, conti_codes, discr_codes), 1)
@@ -166,11 +168,11 @@ def train_InfoGAN(InfoGAN_Dis, InfoGAN_Gen, D_criterion, G_criterion,
     print('Finished Training')
 
 
-def run_InfoGAN(noise_dim=10, n_conti=2, n_discrete=1, mean=0.0, std=0.5,
-                num_category=10, n_layer=3, n_channel=1, D_featmap_dim=256,
-                G_featmap_dim=1024, n_epoch=2, batch_size=50, use_gpu=False,
-                dis_lr=1e-4, gen_lr=1e-3, n_update_dis=1, n_update_gen=1,
-                update_max=None):
+def run_InfoGAN(info_reg_discrete=1.0, info_reg_conti=0.5, noise_dim=10,
+                n_conti=2, n_discrete=1, mean=0.0, std=0.5, num_category=10,
+                n_layer=3, n_channel=1, D_featmap_dim=256, G_featmap_dim=1024,
+                n_epoch=2, batch_size=50, use_gpu=False, dis_lr=1e-4,
+                gen_lr=1e-3, n_update_dis=1, n_update_gen=1, update_max=None):
     # loading data
     trainloader, testloader = load_dataset(batch_size=batch_size)
 
@@ -197,11 +199,12 @@ def run_InfoGAN(noise_dim=10, n_conti=2, n_discrete=1, mean=0.0, std=0.5,
                              betas=(0.5, 0.999))
 
     train_InfoGAN(InfoGAN_Dis, InfoGAN_Gen, D_criterion, G_criterion,
-                  D_optimizer, G_optimizer, trainloader, n_epoch,
-                  batch_size, noise_dim, n_update_dis, n_update_gen,
-                  update_max=update_max)
+                  D_optimizer, G_optimizer, info_reg_discrete, info_reg_conti,
+                  n_conti, n_discrete, mean, std, num_category, trainloader,
+                  n_epoch, batch_size, noise_dim,
+                  n_update_dis, n_update_gen, use_gpu, update_max=update_max)
 
 
 if __name__ == '__main__':
     run_InfoGAN(n_conti=2, n_discrete=1, D_featmap_dim=64, G_featmap_dim=128,
-                n_epoch=1, batch_size=10, update_max=50)
+                n_epoch=1, batch_size=10, update_max=200)
