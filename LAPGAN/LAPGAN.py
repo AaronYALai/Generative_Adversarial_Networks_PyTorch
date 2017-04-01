@@ -25,9 +25,9 @@ class CondiGAN_Discriminator(nn.Module):
 
         # original Discriminator
         self.featmap_dim = featmap_dim
-        self.convs = []
-        self.BNs = []
 
+        convs = []
+        BNs = []
         for layer in range(self.n_layer):
             if layer == (self.n_layer - 1):
                 n_conv_in = n_channel
@@ -39,19 +39,19 @@ class CondiGAN_Discriminator(nn.Module):
                               stride=2, padding=2)
             if use_gpu:
                 _conv = _conv.cuda()
-            self.convs.append(_conv)
+            convs.append(_conv)
 
             if layer != (self.n_layer - 1):
                 _BN = nn.BatchNorm2d(n_conv_out)
                 if use_gpu:
                     _BN = _BN.cuda()
-                self.BNs.append(_BN)
+                BNs.append(_BN)
 
         # extra image information to be conditioned on
         if self.condition:
             self.condi_featmap_dim = condi_featmap_dim
-            self.convs_condi = []
-            self.BNs_condi = []
+            convs_condi = []
+            BNs_condi = []
 
             for layer in range(self.n_layer):
                 if layer == (self.n_layer - 1):
@@ -64,15 +64,22 @@ class CondiGAN_Discriminator(nn.Module):
                                   stride=2, padding=2)
                 if use_gpu:
                     _conv = _conv.cuda()
-                self.convs_condi.append(_conv)
+                convs_condi.append(_conv)
 
                 if layer != (self.n_layer - 1):
                     _BN = nn.BatchNorm2d(n_conv_out)
                     if use_gpu:
                         _BN = _BN.cuda()
-                    self.BNs_condi.append(_BN)
+                    BNs_condi.append(_BN)
 
             self.fc_c = nn.Linear(condi_featmap_dim * 4 * 4, n_condition)
+
+        # register layer modules
+        self.convs = nn.ModuleList(convs)
+        self.BNs = nn.ModuleList(BNs)
+        if self.condition:
+            self.convs_condi = nn.ModuleList(convs_condi)
+            self.BNs_condi = nn.ModuleList(BNs_condi)
 
         # output layer
         n_hidden = featmap_dim * 4 * 4
@@ -130,9 +137,9 @@ class CondiGAN_Generator(nn.Module):
         # extra image information to be conditioned on
         if self.condition:
             self.condi_featmap_dim = condi_featmap_dim
-            self.convs_condi = []
-            self.BNs_condi = []
 
+            convs_condi = []
+            BNs_condi = []
             for layer in range(self.n_layer):
                 if layer == (self.n_layer - 1):
                     n_conv_in = n_channel
@@ -144,13 +151,13 @@ class CondiGAN_Generator(nn.Module):
                                   stride=2, padding=2)
                 if use_gpu:
                     _conv = _conv.cuda()
-                self.convs_condi.append(_conv)
+                convs_condi.append(_conv)
 
                 if layer != (self.n_layer - 1):
                     _BN = nn.BatchNorm2d(n_conv_out)
                     if use_gpu:
                         _BN = _BN.cuda()
-                    self.BNs_condi.append(_BN)
+                    BNs_condi.append(_BN)
 
             self.fc_c = nn.Linear(condi_featmap_dim * 4 * 4, n_condition)
 
@@ -162,9 +169,9 @@ class CondiGAN_Generator(nn.Module):
         # Generator
         self.featmap_dim = featmap_dim
         self.fc1 = nn.Linear(n_input, int(featmap_dim * 4 * 4))
-        self.convs = []
-        self.BNs = []
 
+        convs = []
+        BNs = []
         for layer in range(self.n_layer):
             if layer == 0:
                 n_conv_out = n_channel
@@ -177,13 +184,20 @@ class CondiGAN_Generator(nn.Module):
                                        stride=2, padding=2)
             if use_gpu:
                 _conv = _conv.cuda()
-            self.convs.append(_conv)
+            convs.append(_conv)
 
             if layer != 0:
                 _BN = nn.BatchNorm2d(n_conv_out)
                 if use_gpu:
                     _BN = _BN.cuda()
-                self.BNs.append(_BN)
+                BNs.append(_BN)
+
+        # register layer modules
+        self.convs = nn.ModuleList(convs)
+        self.BNs = nn.ModuleList(BNs)
+        if self.condition:
+            self.convs_condi = nn.ModuleList(convs_condi)
+            self.BNs_condi = nn.ModuleList(BNs_condi)
 
     def forward(self, x, condi_x=None):
         """
