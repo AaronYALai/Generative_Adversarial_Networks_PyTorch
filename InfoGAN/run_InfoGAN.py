@@ -122,7 +122,7 @@ def train_InfoGAN(InfoGAN_Dis, InfoGAN_Gen, D_criterion, G_criterion,
                     L_discrete -= condi_entro
             L_discrete /= n_discrete
 
-            Q_cx_conti = outputs[:, 1:(1 + n_conti)]
+            Q_cx_conti = outputs[batch_size:, 1:(1 + n_conti)]
             L_conti = torch.mean(-(((Q_cx_conti - mean) / std) ** 2))
 
             # Update Discriminator
